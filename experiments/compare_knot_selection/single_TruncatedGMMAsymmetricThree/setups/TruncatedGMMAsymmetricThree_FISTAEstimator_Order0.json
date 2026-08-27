@@ -1,0 +1,45 @@
+{
+    "sampler_setup": {
+        "sampler": "TruncatedGMM",
+        "sampler_params": {
+            "components": [
+                {
+                    "mean": 0.35,
+                    "std": 0.1,
+                    "lower": 0.0,
+                    "upper": 1.0
+                },
+                {
+                    "mean": 0.65,
+                    "std": 0.05,
+                    "lower": 0.0,
+                    "upper": 1.0
+                },
+                {
+                    "mean": 0.9,
+                    "std": 0.2,
+                    "lower": 0.0,
+                    "upper": 1.0
+                }
+            ],
+            "weights": [
+                0.4,
+                0.4,
+                0.2
+            ]
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "FISTAEstimator",
+        "estimator_params": {
+            "lam": 40,
+            "L": 1000000.0,
+            "n_iterations": 10001,
+            "tol": 1e-08,
+            "basis_order": 0,
+            "log_frequency": 10,
+            "n_grid_points": 200
+        }
+    }
+}

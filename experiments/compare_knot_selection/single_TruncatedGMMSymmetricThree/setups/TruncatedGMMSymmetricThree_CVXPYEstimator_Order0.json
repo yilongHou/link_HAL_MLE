@@ -1,0 +1,40 @@
+{
+    "sampler_setup": {
+        "sampler": "TruncatedGMM",
+        "sampler_params": {
+            "components": [
+                {
+                    "mean": 0.2,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                },
+                {
+                    "mean": 0.5,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                },
+                {
+                    "mean": 0.8,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                }
+            ],
+            "weights": [
+                0.33,
+                0.34,
+                0.33
+            ]
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "CVXPYEstimator",
+        "estimator_params": {
+            "basis_order": 0,
+            "norm_constraint": 15
+        }
+    }
+}

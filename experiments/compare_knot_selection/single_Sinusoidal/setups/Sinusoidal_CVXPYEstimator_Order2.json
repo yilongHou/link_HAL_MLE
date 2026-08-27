@@ -1,0 +1,14 @@
+{
+    "sampler_setup": {
+        "sampler": "Sinusoidal",
+        "sampler_params": {},
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "CVXPYEstimator",
+        "estimator_params": {
+            "basis_order": 2,
+            "norm_constraint": 20
+        }
+    }
+}

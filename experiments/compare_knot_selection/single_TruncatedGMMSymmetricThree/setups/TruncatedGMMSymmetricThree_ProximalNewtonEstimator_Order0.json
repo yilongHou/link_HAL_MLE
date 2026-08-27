@@ -1,0 +1,44 @@
+{
+    "sampler_setup": {
+        "sampler": "TruncatedGMM",
+        "sampler_params": {
+            "components": [
+                {
+                    "mean": 0.2,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                },
+                {
+                    "mean": 0.5,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                },
+                {
+                    "mean": 0.8,
+                    "std": 0.05,
+                    "lower": 0,
+                    "upper": 1
+                }
+            ],
+            "weights": [
+                0.33,
+                0.34,
+                0.33
+            ]
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalNewtonEstimator",
+        "estimator_params": {
+            "lam": 30,
+            "n_iterations": 101,
+            "tol": 0.00001,
+            "basis_order": 0,
+            "log_frequency": 1,
+            "n_grid_points": 200
+        }
+    }
+}

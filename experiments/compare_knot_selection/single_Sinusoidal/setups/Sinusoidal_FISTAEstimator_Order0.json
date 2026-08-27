@@ -1,0 +1,19 @@
+{
+    "sampler_setup": {
+        "sampler": "Sinusoidal",
+        "sampler_params": {},
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "FISTAEstimator",
+        "estimator_params": {
+            "lam": 15,
+            "L": 1000000.0,
+            "n_iterations": 10001,
+            "tol": 1e-06,
+            "basis_order": 0,
+            "log_frequency": 100,
+            "n_grid_points": 200
+        }
+    }
+}

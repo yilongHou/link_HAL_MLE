@@ -1,0 +1,19 @@
+{
+    "sampler_setup": {
+        "sampler": "Sinusoidal",
+        "sampler_params": {},
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalAdaGradEstimator",
+        "estimator_params": {
+            "lam": 15,
+            "n_iterations": 10001,
+            "tol": 1e-08,
+            "basis_order": 0,
+            "log_frequency": 100,
+            "n_grid_points": 200,
+            "alpha": 0.00001
+        }
+    }
+}

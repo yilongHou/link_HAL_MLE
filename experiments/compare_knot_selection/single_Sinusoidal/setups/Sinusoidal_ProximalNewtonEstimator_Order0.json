@@ -1,0 +1,18 @@
+{
+    "sampler_setup": {
+        "sampler": "Sinusoidal",
+        "sampler_params": {},
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalNewtonEstimator",
+        "estimator_params": {
+            "lam": 15,
+            "n_iterations": 501,
+            "tol": 0.0001,
+            "basis_order": 0,
+            "log_frequency": 5,
+            "n_grid_points": 200
+        }
+    }
+}

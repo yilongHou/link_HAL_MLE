@@ -1,0 +1,18 @@
+{
+    "sampler_setup": {
+        "sampler": "StepFunction",
+        "sampler_params": {
+            "level1": 1.0,
+            "level2": 0.5,
+            "breakpoint": 0.7
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "CVXPYEstimator",
+        "estimator_params": {
+            "basis_order": 2,
+            "norm_constraint": 20
+        }
+    }
+}

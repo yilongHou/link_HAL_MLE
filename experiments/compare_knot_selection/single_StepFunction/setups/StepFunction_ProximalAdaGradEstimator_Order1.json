@@ -1,0 +1,23 @@
+{
+    "sampler_setup": {
+        "sampler": "StepFunction",
+        "sampler_params": {
+            "level1": 1.0,
+            "level2": 0.5,
+            "breakpoint": 0.7
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalAdaGradEstimator",
+        "estimator_params": {
+            "lam": 0.75,
+            "n_iterations": 100001,
+            "tol": 1e-08,
+            "basis_order": 1,
+            "log_frequency": 100,
+            "n_grid_points": 200,
+            "alpha": 0.00005
+        }
+    }
+}

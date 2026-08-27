@@ -1,0 +1,19 @@
+{
+    "sampler_setup": {
+        "sampler": "TruncatedNormal",
+        "sampler_params": {
+            "mean": 0.5,
+            "std": 0.1,
+            "lower": 0,
+            "upper": 1
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "CVXPYEstimator",
+        "estimator_params": {
+            "basis_order": 2,
+            "norm_constraint": 500
+        }
+    }
+}

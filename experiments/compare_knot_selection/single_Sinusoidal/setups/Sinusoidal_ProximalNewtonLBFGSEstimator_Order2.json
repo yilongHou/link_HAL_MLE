@@ -1,0 +1,22 @@
+{
+    "sampler_setup": {
+        "sampler": "Sinusoidal",
+        "sampler_params": {},
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalNewtonLBFGSEstimator",
+        "estimator_params": {
+            "lam": 0.1,
+            "n_iterations": 20001,
+            "tol": 1e-08,
+            "basis_order": 2,
+            "log_frequency": 10,
+            "n_grid_points": 200,
+            "lbfgs_gamma_clip_range": [
+                1e-6,
+                1e6
+            ]
+        }
+    }
+}

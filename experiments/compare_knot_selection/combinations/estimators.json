@@ -1,0 +1,27 @@
+[
+  {
+    "estimator_setup": {
+      "estimator": "CVXPYEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "FISTAEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "ProximalAdaGradEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "ProximalNewtonEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "ProximalNewtonLBFGSEstimator"
+    }
+  }
+]

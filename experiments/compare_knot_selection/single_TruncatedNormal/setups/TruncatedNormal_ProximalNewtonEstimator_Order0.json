@@ -1,0 +1,23 @@
+{
+    "sampler_setup": {
+        "sampler": "TruncatedNormal",
+        "sampler_params": {
+            "mean": 0.5,
+            "std": 0.1,
+            "lower": 0,
+            "upper": 1
+        },
+        "n_samples": 3200
+    },
+    "estimator_setup": {
+        "estimator": "ProximalNewtonEstimator",
+        "estimator_params": {
+            "lam": 40,
+            "n_iterations": 501,
+            "tol": 0.00001,
+            "basis_order": 0,
+            "log_frequency": 1,
+            "n_grid_points": 200
+        }
+    }
+}
