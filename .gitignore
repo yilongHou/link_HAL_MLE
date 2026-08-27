@@ -1,0 +1,46 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+
+# OS / editor junk
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+
+# Local secrets / licenses (never commit)
+mosek.lic
+*.lic
+local/
+
+# Generated figure and plot dumps (regenerate from seed JSON)
+*.png
+*.pdf
+!docs/**/*.pdf
+
+# Experiment caches and plot output dirs
+experiments/**/plots/
+experiments/**/plots_*/
+experiments/**/cache/
+experiments/**/cache_*/
+experiments/**/cache*/
+experiments/uniform_convergence/bias_variance_mse_analysis_plots/
+experiments/uniform_convergence/efficiency_plots/
+experiments/uniform_convergence/efficiency_targeting_plots/
+experiments/uniform_convergence/targeted_plots/
+experiments/uniform_convergence/TF_TFPP_HAL/
+paper/resources/
+
+# Keep figure-needed seed JSON under results/ and targeted_results/
+# (do not ignore experiments/uniform_convergence/results/ or targeted_results/)
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+texput.log

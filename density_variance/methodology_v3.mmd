@@ -1,0 +1,36 @@
+Consider the parametric form 
+\[
+f_n(x) = \phi(x)^{\top}\beta_n,
+\]
+where $\phi$ denotes the vector of basis functions in $\mathcal{R}_n$.
+
+Let $S_{f_n}(\phi)$ be the score vector, and let $I_{f_n} := P_{f_n}\bigl\{S_{f_n}(\phi)S_{f_n}(\phi)^{\top}\bigr\}$ be the corresponding Fisher information matrix under measure $P_{f_n}$.
+
+Consequently, the empirical variance estimator by plugging in $p_{f_n}(x)$ takes the form
+\[
+\sigma_n^2(x) 
+= \frac{1}{n} (p_{f_n}(x))^2 \phi(x)^{\top} I_{f_n}^{-1} P_n\bigl\{S_{f_n}(\phi)S_{f_n}(\phi)^{\top}\bigr\} I_{f_n}^{-1} \phi(x),
+\]
+where $P_n$ denotes the empirical distribution.
+
+One modification is to replace $I_{f_n}$ by the observed Fisher information $P_n\bigl\{S_{f_n}(\phi)S_{f_n}(\phi)^{\top}\bigr\}$, which is more stable in practice.
+Then the variance estimator becomes
+\[
+\sigma_n^2(x) 
+= \frac{1}{n} (p_{f_n}(x))^2 \phi(x)^{\top} \bigl(P_n\{S_{f_n}(\phi)S_{f_n}(\phi)^{\top}\}\bigr)^{-1} \phi(x).
+\]
+
+Notes for computation:
+1. Compute E[φ(X)] = ∫ φ(x) f(x; β̂) dx
+2. Compute S_{f_n}(\phi) = φ(x) - E[φ(X)]
+3. When compute the inverse of I, add a constant to the diagonal to stabilize the inverse.
+4. Compute observed Fisher information: P_n\bigl\{S_{f_n}(\phi)S_{f_n}(\phi)^{\top}\bigr\} = (1/n) Σᵢ S(xᵢ) S(xᵢ)ᵀ
+5. The confidence interval is given by
+\[\left[\hat{f}_n(x) - z_{1-\alpha/2} \sigma_n(x)/\sqrt n, \hat{f}_n(x) + z_{1-\alpha/2} \sigma_n(x)/\sqrt n \right]\] 
+
+The density_variance.py file contains a suboptimal way of estimating the variance. It is an approximation of the above method by not entirely correct. But there is a few thing to mention. 
+
+First, the input and the output format should be the same. It needs the same thing from (data: pd.DataFrame, estimation_results: Dict) as used in density_variance.py. 
+
+Second, the implementation of the first, second, and last note is included in density_variance.py. You can learn and extend the implementation to the third note. The fourth note should be implemented differently in our case, because we are inverting a different matrix now. But it should be similar to the part using ridge_param. 
+

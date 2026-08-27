@@ -1,0 +1,27 @@
+[
+  {
+    "estimator_setup": {
+      "estimator": "CVXPYEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "KDEEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "TrendFilteringADMMEstimator"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "TrendFilteringCVXPYPP"
+    }
+  },
+  {
+    "estimator_setup": {
+      "estimator": "LogSplinesEstimator"
+    }
+  }
+]

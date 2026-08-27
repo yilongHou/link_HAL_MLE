@@ -1,0 +1,8 @@
+{
+    "TruncatedNormal": "TN",
+    "TruncatedGMMSymmetricThree": "GS3",
+    "TruncatedGMMAsymmetricThree": "GA3",
+    "TruncatedGMMFiveSpikes": "GS5",
+    "StepFunction": "Step",
+    "Sinusoidal": "Sine"
+}

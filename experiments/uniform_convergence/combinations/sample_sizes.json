@@ -1,0 +1,26 @@
+[
+    {
+        "n_samples": 100
+    },
+    {
+        "n_samples": 200
+    },
+    {
+        "n_samples": 400
+    },
+    {
+        "n_samples": 800
+    },
+    {
+        "n_samples": 1600
+    },
+    {
+        "n_samples": 3200
+    },
+    {
+        "n_samples": 50
+    },
+    {
+        "n_samples": 25
+    }
+]
