@@ -267,6 +267,7 @@ Outputs:
 The case study is implemented in the notebook `test_case_study.ipynb`. It uses:
 
 - `case_study/galaxies.csv`
+- `case_study/estimation_results/estimation_results.json` (fitted HAL-MLE used for density CI and HAL-MLE vs TMLE)
 - `case_study/bootstrap_results.json`
 
 To execute the notebook non-interactively:
