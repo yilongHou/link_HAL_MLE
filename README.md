@@ -2,17 +2,19 @@
 
 > **Origin clean snapshot (source of truth).** This private Origin repository is a slim working copy for regenerating paper figures from kept Monte Carlo JSON — not a full mirror of the public GitHub history. There is **no Git LFS**. Per-seed density PNG dumps, license files, and other bulky non-figure artifacts were omitted. TFPP `seed_*.json` files had unused `HAL_results.Hinv` matrices stripped (figure scripts such as `bias_variance_mse_analysis.py` read `estimated_density` / reconstruction fields, not `Hinv`). Paper: [arXiv 2602.16259](https://arxiv.org/abs/2602.16259).
 
-This repository accompanies the final paper [HAL-MLE Log-Splines Density Estimation (Part I: Univariate)](https://arxiv.org/pdf/2602.16259). This README covers the experiments reported in Section 6, Section 7, and Section 8 of the paper, maps them to the scripts in this repo, and gives bash commands.
+This repository accompanies the final paper [HAL-MLE Log-Splines Density Estimation (Part I: Univariate)](https://arxiv.org/pdf/2602.16259). This README maps each experiment **by name** (and figure/caption identity) to the scripts in this repo and gives bash commands.
+
+Section and figure numbers differ between the arXiv preprint and the Bernoulli manuscript. Use the experiment names below; do not look experiments up by preprint or journal numbering.
 
 ## Scope
 
 The paper reports three experiment groups:
 
-1. Optimization algorithm comparison for HAL-MLE solvers (Section 6, Figure 1, plus Appendix J).
-2. Monte Carlo simulations for HAL-MLE theory and method comparisons (Section 7, Figures 3-7 and Tables 2-7, plus Appendix I).
-3. Galaxy-velocity case study (Section 8, Figures 8-11).
+1. Optimization / knot-selection for HAL-MLE solvers.
+2. Monte Carlo simulations for HAL-MLE theory and method comparisons (uniform convergence, pointwise normality, efficiency, EIC coverage, and the `n=800` method comparison).
+3. Galaxy-velocity case study.
 
-The six simulation DGPs in Section 7 are:
+The six simulation DGPs are:
 
 - Truncated Normal (`TruncatedNormal`)
 - Truncated GMM, symmetric three modes (`TruncatedGMMSymmetricThree`)
@@ -25,7 +27,7 @@ The six simulation DGPs in Section 7 are:
 
 The paper's main simulation settings use:
 
-- `1000` Monte Carlo replicates for the Section 7 HAL-MLE simulations
+- `1000` Monte Carlo replicates for the HAL-MLE simulations
 - `50` Optuna trials for cross-validation
 - `5` CV folds
 
@@ -60,19 +62,21 @@ Notes:
 
 ## Experiment-to-Script Map
 
-| Paper experiment | Paper outputs | Raw experiment scripts | Analysis / plotting scripts |
+Look up an experiment by **name**. The second column is the figure/caption identity in the paper, not a preprint or journal number.
+
+| Experiment | Figure / caption identity | Raw experiment scripts | Analysis / plotting scripts |
 | --- | --- | --- | --- |
-| Optimization algorithms on Truncated Normal, 2nd-order basis | Section 6, Figure 1 | `experiments/create_single_experiment.py`, `experiments/run_experiment.py` | `experiments/compare_knot_selection/visualize_loss_per_iter.py`, `experiments/compare_knot_selection/visualize_knot_selection_per_iter.py`, `experiments/compare_knot_selection/visualize_loss_per_flop.py`, `experiments/compare_knot_selection/visualize_knot_selection_per_flop.py` |
-| Uniform convergence of HAL-MLE | Section 7.3.1, Figure 3, Table 2 | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/uniform_convergence_results.py` |
-| Pointwise asymptotic normality and delta-method density variance | Section 7.3.2, Table 3 | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/asymptotic_normality_results_parallel.py` |
-| Asymptotic efficiency of plug-in HAL-MLE and HAL-TMLE for mean, median, survival at 0.5, second moment | Section 7.3.3, Figure 4, Appendix I | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py`, `experiments/uniform_convergence/asymptotic_efficiency_run_targeting_step.py` | `experiments/uniform_convergence/asymptotic_efficiency_results.py`, `experiments/uniform_convergence/asymptotic_efficiency_results_with_targeting.py`, `experiments/uniform_convergence/asymptotic_efficiency_compairson.py` |
-| EIC-based variance estimation for the four estimands | Section 7.4, Tables 4-7, Appendix I | uses targeted results from the previous experiment | `experiments/uniform_convergence/targeting_estimand_variance_result.py` |
-| Comparison with TF, TFPP, LogSplines, and KDE at `n=800` | Section 7.5, Figures 5-7 | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/bias_variance_mse_analysis.py` |
-| Galaxy velocities case study | Section 8, Figures 8-11 | `test_case_study.ipynb` | `test_case_study.ipynb` |
+| Optimization / knot-selection (Truncated Normal, 2nd-order basis) | Optimization-algorithm comparison (loss and knot-selection vs iteration and vs FLOP) | `experiments/create_single_experiment.py`, `experiments/run_experiment.py` | `experiments/compare_knot_selection/visualize_loss_per_iter.py`, `experiments/compare_knot_selection/visualize_knot_selection_per_iter.py`, `experiments/compare_knot_selection/visualize_loss_per_flop.py`, `experiments/compare_knot_selection/visualize_knot_selection_per_flop.py` |
+| Uniform convergence (sup-norm) | HAL-MLE sup-norm error decay and scaling-law table | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/uniform_convergence_results.py` |
+| Pointwise asymptotic normality / delta-method density CI | Pointwise CI width and coverage for the HAL-MLE density | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/asymptotic_normality_results_parallel.py` |
+| Asymptotic efficiency of plug-in HAL-MLE vs HAL-TMLE (mean, median, survival at 0.5, second moment) | Efficiency panels for the four estimands; six-DGP appendix panels | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py`, `experiments/uniform_convergence/asymptotic_efficiency_run_targeting_step.py` | `experiments/uniform_convergence/asymptotic_efficiency_results.py`, `experiments/uniform_convergence/asymptotic_efficiency_results_with_targeting.py`, `experiments/uniform_convergence/asymptotic_efficiency_compairson.py` |
+| EIC-based coverage for those four estimands | EIC standard-error coverage tables for mean, median, survival at 0.5, and second moment | uses targeted results from the efficiency experiment | `experiments/uniform_convergence/targeting_estimand_variance_result.py` |
+| n=800 method comparison (HAL-MLE, TF, TFPP, LogSplines, KDE) | Bias, variance, and MSE comparison across DGPs at `n=800` | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/bias_variance_mse_analysis.py` |
+| Galaxy-velocity case study | Galaxy-velocity density and estimand figures | `test_case_study.ipynb` | `test_case_study.ipynb` |
 
-## 1. Optimization Algorithms (Section 6, Figure 1)
+## 1. Optimization / knot-selection (Truncated Normal, 2nd-order basis)
 
-The optimization experiment is the Truncated Normal DGP with 2nd-order basis functions. The repo setup generator creates all DGPs and all basis orders, but Figure 1 only needs the `TruncatedNormal` order-2 runs.
+The optimization / knot-selection experiment is the Truncated Normal DGP with 2nd-order basis functions. The repo setup generator creates all DGPs and all basis orders, but this figure only needs the `TruncatedNormal` order-2 runs.
 
 ```bash
 uv run python experiments/create_single_experiment.py \
@@ -104,11 +108,11 @@ uv run python experiments/compare_knot_selection/visualize_knot_selection_per_fl
 
 Outputs for the paper figure are written under `paper/resources/optimization_algorithms/`.
 
-If you also want the appendix panels for all six DGPs, rerun the visualization scripts with `--dgp all` after generating the corresponding single-experiment results.
+If you also want the remaining five DGP panels, rerun the visualization scripts with `--dgp all` after generating the corresponding single-experiment results.
 
-## 2. Common HAL-MLE Simulation Sweep (used by Sections 7.3 and 7.4)
+## Shared HAL-MLE Monte Carlo sweep
 
-Sections 7.3 and 7.4 all start from the same HAL-MLE Monte Carlo sweep: six DGPs, sample sizes `25, 50, 100, 200, 400, 800, 1600, 3200`, and the HAL-MLE estimator (`CVXPYEstimator`).
+Uniform convergence, pointwise asymptotic normality, asymptotic efficiency, and EIC-based coverage all start from the same HAL-MLE Monte Carlo sweep: six DGPs, sample sizes `25, 50, 100, 200, 400, 800, 1600, 3200`, and the HAL-MLE estimator (`CVXPYEstimator`).
 
 ```bash
 uv run python experiments/create_bulk_experiment.py \
@@ -126,7 +130,7 @@ done
 
 These commands write per-seed JSON results to `experiments/uniform_convergence/results/`.
 
-## 3. Uniform Convergence (Section 7.3.1, Figure 3, Table 2)
+## 2. Uniform convergence (sup-norm)
 
 This experiment checks the sup-norm error decay of the HAL-MLE.
 
@@ -140,7 +144,7 @@ Outputs:
 - Summary CSV in `experiments/uniform_convergence/uniform_convergence_summary.csv`
 - Scaling-law table in `paper/resources/density_uniform_convergence/uniform_convergence_scaling_table.tex`
 
-## 4. Pointwise Asymptotic Normality and Density Variance (Section 7.3.2, Table 3)
+## 3. Pointwise asymptotic normality / delta-method density CI
 
 This experiment evaluates pointwise CI width and coverage for the HAL-MLE density using the delta-method variance estimator.
 
@@ -156,7 +160,7 @@ Outputs:
 - Coverage table in `paper/resources/density_asymptotic_normality_and_var_est/coverage_analysis_table.tex`
 - Caches in `experiments/uniform_convergence/cache/`
 
-## 5. Asymptotic Efficiency of Plug-in HAL-MLE and HAL-TMLE (Section 7.3.3, Figure 4)
+## 4. Asymptotic efficiency of plug-in HAL-MLE vs HAL-TMLE
 
 The paper compares the plug-in HAL-MLE and HAL-TMLE against the asymptotically efficient estimators for:
 
@@ -195,11 +199,11 @@ Outputs:
 - Targeted per-estimand summaries in `experiments/uniform_convergence/targeted_plots/`
 - Final comparison panels in `paper/resources/density_asymptotic_efficiency/`
 
-The paper's main-text Figure 4 is the `TruncatedGMMAsymmetricThree` panel. The same script also writes the full six-DGP appendix panels.
+The main-text efficiency panel is `TruncatedGMMAsymmetricThree`. The same script also writes the full six-DGP panels.
 
-## 6. EIC-Based Variance Estimation for Statistical Estimands (Section 7.4, Tables 4-7)
+## 5. EIC-based coverage for those four estimands
 
-This step uses the targeted results from the previous section and evaluates coverage of the EIC-based standard errors for the same four estimands.
+This step uses the targeted results from the efficiency experiment and evaluates coverage of the EIC-based standard errors for the same four estimands.
 
 ```bash
 uv run python experiments/uniform_convergence/targeting_estimand_variance_result.py \
@@ -218,7 +222,7 @@ Outputs:
   - `paper/resources/target_estimand_variance/coverage_targeting_median.tex`
 - Caches in `experiments/uniform_convergence/cache_targeting_variance/`
 
-## 7. Comparison with Existing Methods (Section 7.5, Figures 5-7)
+## 6. n=800 method comparison (HAL-MLE, TF, TFPP, LogSplines, KDE)
 
 The paper compares HAL-MLE against:
 
@@ -229,9 +233,9 @@ The paper compares HAL-MLE against:
 
 at sample size `n=800`.
 
-### 7.1 HAL-MLE, TF, TFPP, LogSplines, and KDE raw runs
+### Raw runs
 
-HAL-MLE at `n=800` is already included in the common HAL sweep above. Run the additional TF, TFPP, LogSplines, and KDE jobs as follows:
+HAL-MLE at `n=800` is already included in the shared HAL-MLE Monte Carlo sweep above. Run the additional TF, TFPP, LogSplines, and KDE jobs as follows:
 
 ```bash
 for setup in \
@@ -246,7 +250,7 @@ for setup in \
 done
 ```
 
-### 7.2 Generate the paper comparison figures
+### Generate comparison figures
 
 Run this only after the HAL-MLE, TF, TFPP, KDE, and LogSplines `n=800` results all exist:
 
@@ -264,7 +268,7 @@ Outputs:
 - `paper/resources/density_bias_variance_mse_analysis/methods_compare_variance_across_dgps_N800.png`
 - `paper/resources/density_bias_variance_mse_analysis/methods_compare_mse_across_dgps_N800.png`
 
-## 8. Galaxy-Velocity Case Study (Section 8, Figures 8-11)
+## 7. Galaxy-velocity case study
 
 The case study is implemented in the notebook `test_case_study.ipynb`. It uses:
 
