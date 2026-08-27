@@ -52,7 +52,7 @@ Notes:
 - All commands below use `uv run`.
 - The HAL-MLE experiments use the CVXPY-based estimator. MOSEK is the default solver, and when MOSEK fails the workflow falls back to ECOS and then SCS, as formalized in the HALDensity package.
 - **LogSplines dependency:** The LogSplines comparison method wraps the external R `logspline` package via `rpy2`. Our current local environment uses `logspline` version `2.1.22`, but this R dependency is not pinned or lockfile-managed in this repository, so `LogSplinesEstimator` support remains commented out by default in `experiments/run_experiment.py` and `experiments/run_bulk_experiment.py`. The remaining methods (HAL-MLE, TF, TFPP, KDE) work without R.
-- The case study notebook uses the provided `case_study/bootstrap_results.json` so that the bootstrap-based figure can be reproduced without rerunning the bootstrap from scratch.
+- The case study notebook uses three checked-in inputs so later cells can load the HAL-MLE fit and the bootstrap figure without refitting: `case_study/galaxies.csv`, `case_study/estimation_results/estimation_results.json`, and `case_study/bootstrap_results.json`.
 
 ## Experiment-to-Script Map
 
@@ -70,16 +70,11 @@ Look up an experiment by **name**. The second column is the figure/caption ident
 
 ## 1. Optimization / knot-selection (Truncated Normal, 2nd-order basis)
 
-The optimization / knot-selection experiment is the Truncated Normal DGP with 2nd-order basis functions. The repo setup generator creates all DGPs and all basis orders, but this figure only needs the `TruncatedNormal` order-2 runs.
+The optimization / knot-selection experiment is the Truncated Normal DGP with 2nd-order basis functions.
+
+**Default path: plot the JSON that is already in the repo.** Result JSONs, setups, combinations, and knot-count CSVs for all six DGPs are checked in under `experiments/compare_knot_selection/`. Run the `visualize_*.py` scripts against those existing results. Do **not** blindly re-run the `create_single_experiment` / `run_experiment` loop: `experiments/run_experiment.py` has no skip-existing check and will overwrite the kept result JSONs.
 
 ```bash
-uv run python experiments/create_single_experiment.py \
-  --output_base_dir experiments/compare_knot_selection
-
-for setup in experiments/compare_knot_selection/single_TruncatedNormal/setups/*Order2.json; do
-  uv run python experiments/run_experiment.py "$setup"
-done
-
 uv run python experiments/compare_knot_selection/visualize_loss_per_iter.py \
   --dgp TruncatedNormal \
   --figure-dir paper/resources/optimization_algorithms/per_iter \
@@ -100,9 +95,18 @@ uv run python experiments/compare_knot_selection/visualize_knot_selection_per_fl
   --figure-dir paper/resources/optimization_algorithms/per_flop
 ```
 
-Outputs for the paper figure are written under `paper/resources/optimization_algorithms/`.
+Outputs for the paper figure are written under `paper/resources/optimization_algorithms/`. The paper panel uses Truncated Normal order-2. For the remaining five DGP panels, rerun the same visualization scripts with `--dgp all` (those result JSONs are already in the repo).
 
-If you also want the remaining five DGP panels, rerun the visualization scripts with `--dgp all` after generating the corresponding single-experiment results.
+**From-scratch refit (only if you intend to replace the kept JSONs).** The repo setup generator creates all DGPs and all basis orders; this figure only needs the `TruncatedNormal` order-2 runs.
+
+```bash
+uv run python experiments/create_single_experiment.py \
+  --output_base_dir experiments/compare_knot_selection
+
+for setup in experiments/compare_knot_selection/single_TruncatedNormal/setups/*Order2.json; do
+  uv run python experiments/run_experiment.py "$setup"
+done
+```
 
 ## Shared HAL-MLE Monte Carlo sweep
 

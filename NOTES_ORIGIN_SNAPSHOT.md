@@ -14,9 +14,10 @@ This tree was imported as a **fresh snapshot** of the GitHub default-branch work
 ## Kept for figure regeneration
 
 - Source under `methods/`, `utils/`, `targeting/`, `cross_validation/`, `density_variance/`, and experiment scripts
+- `experiments/compare_knot_selection/` — result JSONs, setups, combinations, and knot-count CSVs for all six DGPs
 - `experiments/uniform_convergence/results/` — CVXPY all N; TF / TFPP / KDE / LogSplines at N=800
 - `experiments/uniform_convergence/targeted_results/`
 - Summaries: `uniform_convergence_summary.csv`, `efficiency_analysis_results.json`
-- Case study: `case_study/galaxies.csv`, `case_study/bootstrap_results.json`
+- Case study: `case_study/galaxies.csv`, `case_study/estimation_results/estimation_results.json`, `case_study/bootstrap_results.json`
 
 See `README.md` for the experiment-to-script map and `uv run` commands.
