@@ -1,1 +1,14 @@
-PLACEHOLDER_READ_FROM_FILE
+{
+    "results": {
+        "theta_hat": [
+            -63.79348084051666
+        ]
+    },
+    "estimator_setup": {
+        "estimator": "CVXPYEstimator",
+        "estimator_params": {
+            "basis_order": 2
+        }
+    },
+    "grid_points": []
+}
