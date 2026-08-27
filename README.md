@@ -1,11 +1,5 @@
 # Experiment Reproduction for HAL-MLE Log-Splines Density Estimation (Part I: Univariate)
 
-> **Origin clean snapshot (source of truth).** This private Origin repository is a slim working copy for regenerating paper figures from kept Monte Carlo JSON — not a full mirror of the public GitHub history. There is **no Git LFS**. Per-seed density PNG dumps, license files, and other bulky non-figure artifacts were omitted. TFPP `seed_*.json` files had unused `HAL_results.Hinv` matrices stripped (figure scripts such as `bias_variance_mse_analysis.py` read `estimated_density` / reconstruction fields, not `Hinv`). Paper: [arXiv 2602.16259](https://arxiv.org/abs/2602.16259).
-
-This repository accompanies the final paper [HAL-MLE Log-Splines Density Estimation (Part I: Univariate)](https://arxiv.org/pdf/2602.16259). This README maps each experiment **by name** (and figure/caption identity) to the scripts in this repo and gives bash commands.
-
-Section and figure numbers differ between the arXiv preprint and the Bernoulli manuscript. Use the experiment names below; do not look experiments up by preprint or journal numbering.
-
 ## Scope
 
 The paper reports three experiment groups:
@@ -56,13 +50,13 @@ export SETUP_DIR=experiments/uniform_convergence/setups_minimum
 Notes:
 
 - All commands below use `uv run`.
-- The HAL-MLE experiments in Section 7 use the CVXPY-based estimator. MOSEK is the default solver, and when MOSEK fails the workflow falls back to ECOS and then SCS, as formalized in the HALDensity package.
+- The HAL-MLE experiments use the CVXPY-based estimator. MOSEK is the default solver, and when MOSEK fails the workflow falls back to ECOS and then SCS, as formalized in the HALDensity package.
 - **LogSplines dependency:** The LogSplines comparison method wraps the external R `logspline` package via `rpy2`. Our current local environment uses `logspline` version `2.1.22`, but this R dependency is not pinned or lockfile-managed in this repository, so `LogSplinesEstimator` support remains commented out by default in `experiments/run_experiment.py` and `experiments/run_bulk_experiment.py`. The remaining methods (HAL-MLE, TF, TFPP, KDE) work without R.
 - The case study notebook uses the provided `case_study/bootstrap_results.json` so that the bootstrap-based figure can be reproduced without rerunning the bootstrap from scratch.
 
 ## Experiment-to-Script Map
 
-Look up an experiment by **name**. The second column is the figure/caption identity in the paper, not a preprint or journal number.
+Look up an experiment by **name**. The second column is the figure/caption identity.
 
 | Experiment | Figure / caption identity | Raw experiment scripts | Analysis / plotting scripts |
 | --- | --- | --- | --- |
