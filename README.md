@@ -1,5 +1,31 @@
 # Experiment Reproduction for HAL-MLE Log-Splines Density Estimation (Part I: Univariate)
 
+This repository accompanies the paper [HAL-MLE Log-Splines Density Estimation (Part I: Univariate)](https://arxiv.org/abs/2602.16259). It is self-contained: the estimators used by the experiments live under `methods/`. The maintained Python package for HAL-MLE density estimation is [HALDensity](https://github.com/yilongHou/HALDensity).
+
+## Getting the code
+
+The per-seed result JSONs behind every figure in the paper are checked in (`experiments/uniform_convergence/results/`, `experiments/uniform_convergence/targeted_results/`, `experiments/compare_knot_selection/`), so all figures and tables can be regenerated with the analysis scripts without recomputing anything. The price is size: a full clone downloads roughly 47 GB and checks out roughly 100 GB.
+
+If you only want to run the code (or regenerate the knot-selection figures and the case study, whose inputs are small), do a code-only partial clone (about 120 MB):
+
+```bash
+git clone --filter=blob:none --no-checkout https://github.com/yilongHou/link_HAL_MLE.git
+cd link_HAL_MLE
+git sparse-checkout init --cone
+git sparse-checkout set case_study cross_validation density_variance methods targeting utils \
+  experiments/compare_knot_selection \
+  experiments/uniform_convergence/combinations \
+  experiments/uniform_convergence/scripts \
+  experiments/uniform_convergence/setups
+git checkout main
+```
+
+Archived seed JSONs can be pulled in later, one experiment at a time (blobs are fetched on demand):
+
+```bash
+git sparse-checkout add experiments/uniform_convergence/results/TruncatedNormal_CVXPYEstimator_N800
+```
+
 ## Scope
 
 The paper reports three experiment groups:
@@ -49,9 +75,9 @@ export SETUP_DIR=experiments/uniform_convergence/setups_minimum
 
 Notes:
 
-- All commands below use `uv run`.
-- The HAL-MLE experiments use the CVXPY-based estimator. MOSEK is the default solver, and when MOSEK fails the workflow falls back to ECOS and then SCS, as formalized in the HALDensity package.
-- **LogSplines dependency:** The LogSplines comparison method wraps the external R `logspline` package via `rpy2`. Our current local environment uses `logspline` version `2.1.22`, but this R dependency is not pinned or lockfile-managed in this repository, so `LogSplinesEstimator` support remains commented out by default in `experiments/run_experiment.py` and `experiments/run_bulk_experiment.py`. The remaining methods (HAL-MLE, TF, TFPP, KDE) work without R.
+- All commands below use `uv run`. `uv sync` installs Python 3.11 (`.python-version`) and the locked dependencies (`uv.lock`); no system R is needed for the default environment.
+- **MOSEK license:** The HAL-MLE experiments use the CVXPY-based estimator with MOSEK as the default solver. MOSEK requires a license (free academic licenses are available from mosek.com); put it at `~/mosek/mosek.lic` or point `MOSEKLM_LICENSE_FILE` at it. Without a valid license the MOSEK call fails and the estimator falls back to CLARABEL, then ECOS, then OSQP (`methods/first_order_method/cvxpy/estimator.py`; the Optuna tuner enables this fallback by default). The paper's results were produced with MOSEK, so fallback-solver runs may differ slightly.
+- **LogSplines dependency (optional):** The LogSplines comparison method wraps the R `logspline` package via `rpy2`, which is an optional extra: install it with `uv sync --extra logspline` on a machine with R and the `logspline` R package (we used `logspline` 2.1.22; the R side is not lockfile-managed). `LogSplinesEstimator` is commented out by default in `experiments/run_experiment.py` and `experiments/run_bulk_experiment.py`; the remaining methods (HAL-MLE, TF, TFPP, KDE) work without R.
 - The case study notebook uses three checked-in inputs so later cells can load the HAL-MLE fit and the bootstrap figure without refitting: `case_study/galaxies.csv`, `case_study/estimation_results/estimation_results.json`, and `case_study/bootstrap_results.json`.
 
 ## Experiment-to-Script Map
@@ -72,7 +98,7 @@ Look up an experiment by **name**. The second column is the figure/caption ident
 
 The optimization / knot-selection experiment is the Truncated Normal DGP with 2nd-order basis functions.
 
-**Default path: plot the JSON that is already in the repo.** Result JSONs, setups, combinations, and knot-count CSVs for all six DGPs are checked in under `experiments/compare_knot_selection/`. Run the `visualize_*.py` scripts against those existing results. Do **not** blindly re-run the `create_single_experiment` / `run_experiment` loop: `experiments/run_experiment.py` has no skip-existing check and will overwrite the kept result JSONs.
+**Default path: plot the results that are already in the repo.** Result JSONs, setups, combinations, knot-count CSVs, and the per-iteration optimizer logs (`single_<DGP>/logs/*.log`, which the `visualize_*.py` scripts read) for all six DGPs are checked in under `experiments/compare_knot_selection/`. Run the `visualize_*.py` scripts against those existing results. Do **not** blindly re-run the `create_single_experiment` / `run_experiment` loop: `experiments/run_experiment.py` has no skip-existing check and will overwrite the kept result JSONs.
 
 ```bash
 uv run python experiments/compare_knot_selection/visualize_loss_per_iter.py \
@@ -195,7 +221,7 @@ Outputs:
 
 - Plug-in efficiency summaries in `experiments/uniform_convergence/efficiency_analysis_results.json`
 - Targeted per-estimand summaries in `experiments/uniform_convergence/targeted_plots/`
-- Final comparison panels in `paper/resources/density_asymptotic_efficiency/`
+- Final comparison panels in `paper/resources/density_asymptotic_efficiency/<DGP>/`: the full 3x4 panel `efficiency_comparison.png` (MSE, variance, |bias|/SE) and the compact 2x4 panel `efficiency_comparison_mse_bias_over_se.png` (MSE and |bias|/SE only)
 
 The main-text efficiency panel is `TruncatedGMMAsymmetricThree`. The same script also writes the full six-DGP panels.
 
@@ -286,6 +312,7 @@ Outputs are written to `paper/resources/case_study/`:
 - `hal_mle_vs_hal_tmle_for_mean.png`
 - `hal_mle_vs_hal_tmle_for_median.png`
 - `hal_mle_vs_hal_tmle_for_survival.png`
+- `hal_mle_vs_hal_tmle_rhs_mean_median_survival_combined.png` (the three right-hand-side panels combined into one figure with a shared legend)
 
 If you prefer to inspect the notebook interactively, open it with:
 

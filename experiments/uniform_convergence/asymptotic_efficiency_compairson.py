@@ -183,10 +183,132 @@ def extract_metrics_from_targeting(targeting_results, dgp_name, parameter):
     
     return sample_sizes, hal_target_metrics, efficient_metrics
 
+def save_comparison_plot(
+    original_results,
+    targeting_results,
+    dgp_name,
+    parameters,
+    selected_metrics,
+    metric_display_names,
+    save_dir,
+    plot_filename,
+    figsize
+):
+    """Save one comparison panel for a single DGP."""
+    n_rows = len(selected_metrics)
+    fig, axes = plt.subplots(n_rows, len(parameters), figsize=figsize, squeeze=False)
+    fig.suptitle(f'DGP: {DGP_NAME_MAPPING[dgp_name]}', fontsize=13, y=0.95)
+
+    # Plot each metric (row) x parameter (column) combination
+    for row, metric_key in enumerate(selected_metrics):
+        for col, param in enumerate(parameters):
+            ax = axes[row, col]
+
+            # Extract data from original results
+            orig_sample_sizes, orig_hal_metrics, orig_eff_metrics = extract_metrics_from_original(
+                original_results, dgp_name, param)
+
+            # Extract data from targeting results
+            target_sample_sizes, target_hal_metrics, target_eff_metrics = extract_metrics_from_targeting(
+                targeting_results, dgp_name, param)
+
+            # Check if we have data
+            if not orig_sample_sizes or not target_sample_sizes:
+                ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
+                if row == 0:
+                    ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
+                continue
+
+            # Use original sample sizes as reference
+            sample_sizes = orig_sample_sizes
+
+            # Get metric values
+            efficient_values = orig_eff_metrics[metric_key]
+            hal_mle_values = orig_hal_metrics[metric_key]
+
+            # For targeting values, align sample sizes
+            hal_target_values = []
+            for n in sample_sizes:
+                try:
+                    idx = target_sample_sizes.index(n)
+                    hal_target_values.append(target_hal_metrics[metric_key][idx])
+                except (ValueError, IndexError):
+                    hal_target_values.append(np.nan)  # Missing data
+
+            # Skip if all values are zero or nan
+            all_values = efficient_values + hal_mle_values + [v for v in hal_target_values if not np.isnan(v)]
+            if all(v == 0 for v in all_values):
+                ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
+                if row == 0:
+                    ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
+                continue
+
+            # Plot the three estimators
+            ax.plot(sample_sizes, efficient_values, 's-',
+                   label='Asymptotically Efficient Estimator', linewidth=2.5, markersize=4, color='green')
+            ax.plot(sample_sizes, hal_mle_values, 'o-',
+                   label='HAL-MLE', linewidth=2, markersize=4, color='blue')
+            ax.plot(sample_sizes, hal_target_values, '^--',
+                   label='HAL-TMLE', linewidth=2, markersize=4, color='red')
+
+            ax.set_xscale('log')
+            ax.grid(True, ls="--", alpha=0.3)
+
+            # Set title for top row (parameter names)
+            if row == 0:
+                ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
+
+            # Set ylabel for leftmost column (metric names)
+            if col == 0:
+                ax.set_ylabel(metric_display_names[metric_key], fontsize=10)
+
+                # Format y-axis tick labels to 3 decimal places
+                ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.3f}'))
+
+            # Set xlabel only for bottom row
+            if row == n_rows - 1:
+                ax.set_xlabel('Sample Size', fontsize=10)
+
+            # Remove x-axis labels for non-bottom rows
+            if row < n_rows - 1:
+                ax.set_xticklabels([])
+
+            # Remove y-axis labels for non-leftmost columns
+            if col > 0:
+                ax.set_yticklabels([])
+
+    handles = labels = None
+    for ax in axes.flat:
+        handles, labels = ax.get_legend_handles_labels()
+        if handles:
+            break
+
+    if handles:
+        fig.legend(handles, labels, loc='lower center', ncol=3,
+                  bbox_to_anchor=(0.5, -0.05), fontsize=10)
+
+    # Adjust layout to make room for legend
+    plt.tight_layout()
+    plt.subplots_adjust(
+        bottom=0.12 if handles else 0.08,
+        top=0.875,
+        hspace=0.20,
+        wspace=0.10
+    )
+
+    # Save the figure
+    dgp_save_dir = os.path.join(save_dir, dgp_name)
+    os.makedirs(dgp_save_dir, exist_ok=True)
+    plot_path = os.path.join(dgp_save_dir, plot_filename)
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    print(f"Saved comparison plot: {plot_path}")
+
 def create_comparison_plots(original_results, targeting_results, save_dir):
     """
-    Create and save 3x4 subplot grids for each DGP comparing three estimators across 3 metrics and 4 estimands.
-    Each DGP gets one figure with 12 subplots (3 rows x 4 columns).
+    Create and save comparison subplot grids for each DGP.
+    Each DGP gets the full 3x4 panel and a compact 2x4 panel without the variance row.
     """
     os.makedirs(save_dir, exist_ok=True)
     
@@ -204,123 +326,38 @@ def create_comparison_plots(original_results, targeting_results, save_dir):
     # All parameters to plot as columns
     parameters = ['mean', 'median', 's_0_5', 'second_moment']
     
-    # Select 3 most important metrics as rows (same as targeting script)
-    selected_metrics = ['mse', 'variance', 'bias_over_se']
     metric_display_names = {
         'mse': 'Mean Squared Error',
         'variance': 'Variance',
         'bias_over_se': '|Bias| / Standard Error'
     }
+    plot_specs = [
+        {
+            'selected_metrics': ['mse', 'variance', 'bias_over_se'],
+            'plot_filename': 'efficiency_comparison.png',
+            'figsize': (10, 6)
+        },
+        {
+            'selected_metrics': ['mse', 'bias_over_se'],
+            'plot_filename': 'efficiency_comparison_mse_bias_over_se.png',
+            'figsize': (10, 4.5)
+        }
+    ]
     
     # Create one figure per DGP
     for dgp_name in available_dgps:
-        # Create figure with 3x4 subplots
-        fig, axes = plt.subplots(3, 4, figsize=(10, 6))
-        fig.suptitle(f'DGP: {DGP_NAME_MAPPING[dgp_name]}', fontsize=13, y=0.95)
-        
-        # Plot each metric (row) x parameter (column) combination
-        for row, metric_key in enumerate(selected_metrics):
-            for col, param in enumerate(parameters):
-                ax = axes[row, col]
-                
-                # Extract data from original results
-                orig_sample_sizes, orig_hal_metrics, orig_eff_metrics = extract_metrics_from_original(
-                    original_results, dgp_name, param)
-                
-                # Extract data from targeting results
-                target_sample_sizes, target_hal_metrics, target_eff_metrics = extract_metrics_from_targeting(
-                    targeting_results, dgp_name, param)
-                
-                # Check if we have data
-                if not orig_sample_sizes or not target_sample_sizes:
-                    ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
-                    if row == 0:
-                        ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
-                    continue
-                
-                # Use original sample sizes as reference
-                sample_sizes = orig_sample_sizes
-                
-                # Get metric values
-                efficient_values = orig_eff_metrics[metric_key]
-                hal_mle_values = orig_hal_metrics[metric_key]
-                
-                # For targeting values, align sample sizes
-                hal_target_values = []
-                for n in sample_sizes:
-                    try:
-                        idx = target_sample_sizes.index(n)
-                        hal_target_values.append(target_hal_metrics[metric_key][idx])
-                    except (ValueError, IndexError):
-                        hal_target_values.append(np.nan)  # Missing data
-                
-                # Skip if all values are zero or nan
-                all_values = efficient_values + hal_mle_values + [v for v in hal_target_values if not np.isnan(v)]
-                if all(v == 0 for v in all_values):
-                    ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
-                    if row == 0:
-                        ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
-                    continue
-                
-                # Plot the three estimators
-                ax.plot(sample_sizes, efficient_values, 's-', 
-                       label='Asymptotically Efficient Estimator', linewidth=2.5, markersize=4, color='green')
-                ax.plot(sample_sizes, hal_mle_values, 'o-', 
-                       label='HAL-MLE', linewidth=2, markersize=4, color='blue')
-                ax.plot(sample_sizes, hal_target_values, '^--', 
-                       label='HAL-TMLE', linewidth=2, markersize=4, color='red')
-                
-                # Set scales based on metric type
-                if metric_key in ['mse', 'variance']:
-                    ax.set_xscale('log')
-                    # ax.set_yscale('log')
-                    ax.grid(True, ls="--", alpha=0.3)
-                else:  # bias_over_se
-                    ax.set_xscale('log')
-                    # ax.set_yscale('log')
-                    ax.grid(True, ls="--", alpha=0.3)
-                
-                # Set title for top row (parameter names)
-                if row == 0:
-                    ax.set_title(f'{PARAM_DISPLAY_NAMES[param]}', fontsize=10, pad=10)
-                
-                # Set ylabel for leftmost column (metric names)
-                if col == 0:
-                    ax.set_ylabel(metric_display_names[metric_key], fontsize=10)
-                
-                    # Format y-axis tick labels to 3 decimal places
-                    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.3f}'))
-
-                # Set xlabel only for bottom row
-                if row == 2:
-                    ax.set_xlabel('Sample Size', fontsize=10)
-                
-                # Remove x-axis labels for non-bottom rows
-                if row < 2:
-                    ax.set_xticklabels([])
-                
-                # Remove y-axis labels for non-leftmost columns
-                if col > 0:
-                    ax.set_yticklabels([])
-        
-        # Add shared legend below the subplots
-        handles, labels = axes[0, 0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='lower center', ncol=3, 
-                  bbox_to_anchor=(0.5, -0.05), fontsize=10)
-        
-        # Adjust layout to make room for legend
-        plt.tight_layout()
-        plt.subplots_adjust(bottom=0.10, top=0.875, hspace=0.20, wspace=0.10)
-        
-        # Save the figure
-        dgp_save_dir = os.path.join(save_dir, dgp_name)
-        os.makedirs(dgp_save_dir, exist_ok=True)
-        plot_filename = f"efficiency_comparison.png"
-        plot_path = os.path.join(dgp_save_dir, plot_filename)
-        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        
-        print(f"Saved comparison plot: {plot_path}")
+        for plot_spec in plot_specs:
+            save_comparison_plot(
+                original_results=original_results,
+                targeting_results=targeting_results,
+                dgp_name=dgp_name,
+                parameters=parameters,
+                selected_metrics=plot_spec['selected_metrics'],
+                metric_display_names=metric_display_names,
+                save_dir=save_dir,
+                plot_filename=plot_spec['plot_filename'],
+                figsize=plot_spec['figsize']
+            )
 
     print(f"\nAll comparison plots saved to {os.path.abspath(save_dir)}")
 
