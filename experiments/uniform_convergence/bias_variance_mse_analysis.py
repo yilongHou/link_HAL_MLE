@@ -156,8 +156,6 @@ METHODS = {
     "KDE": "KDEEstimator",
     "TF": "TrendFilteringADMMEstimator",
     "TFPP": "TrendFilteringCVXPYPP",
-    # Trend filtering Algorithm 2 (layered PPA2) results.
-    "TFA2": "TrendFilteringCVXPYPPA2Layered",
     # Pseudo-method: uses TFPP files but adjusts/renormalizes densities on a common grid
     # before evaluating at the bias/variance/MSE evaluation points.
     "TFPP-adjusted": "TrendFilteringCVXPYPP",
@@ -514,7 +512,6 @@ def create_dgp_comparison_plot(
         'KDE': 'orange', 
         'TF': 'green',
         'TFPP': 'purple',
-        'TFA2': 'brown',
         'TFPP-adjusted': 'magenta',
         'LogSplines': 'red'
     }
@@ -524,7 +521,6 @@ def create_dgp_comparison_plot(
         'HAL': 'o',
         'TF': 's',  # Square marker for TF
         'TFPP': 'P',  # Plus (filled) marker for TFPP
-        'TFA2': '*',  # Star marker for TF Algorithm 2
         'TFPP-adjusted': 'X',  # X marker for adjusted TFPP
         'LogSplines': '^',     # Triangle marker for LogSplines
         'KDE': 'D'             # Diamond marker for KDE
@@ -604,7 +600,6 @@ def create_metric_comparison_plots(
         'KDE': 'orange', 
         'TF': 'green',
         'TFPP': 'purple',
-        'TFA2': 'brown',
         'TFPP-adjusted': 'magenta',
         'LogSplines': 'red'
     }
@@ -614,7 +609,6 @@ def create_metric_comparison_plots(
         'HAL': 'o',
         'TF': 's',         # Square marker for TF
         'TFPP': 'P',       # Plus (filled) marker for TFPP
-        'TFA2': '*',
         'TFPP-adjusted': 'X',
         'LogSplines': '^', # Triangle marker for LogSplines
         'KDE': 'D'         # Diamond marker for KDE

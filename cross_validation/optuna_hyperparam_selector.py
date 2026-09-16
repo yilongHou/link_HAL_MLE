@@ -13,8 +13,6 @@ Example commands:
     uv run test_optuna.py --estimator CVXPYEstimator --n-trials 50
     uv run test_optuna.py --estimator FISTAEstimator --n-trials 50 --max-iter 10000
     uv run test_optuna.py --estimator ProximalNewtonEstimator --n-trials 50 --max-iter 500
-    uv run test_optuna.py --estimator ProximalNewtonLBFGSFullEstimator --n-trials 50 --max-iter 10000
-    uv run test_optuna.py --estimator AutoDiffEstimator --n-trials 50
     uv run test_optuna.py --estimator KDEEstimator --n-trials 50
     uv run test_optuna.py --estimator TrendFilteringADMMEstimator --n-trials 50
     uv run test_optuna.py --estimator LogSplinesEstimator --n-trials 1
@@ -24,8 +22,6 @@ Available estimators:
     - CVXPYEstimator
     - FISTAEstimator
     - ProximalNewtonEstimator
-    - ProximalNewtonLBFGSFullEstimator
-    - AutoDiffEstimator  
     - KDEEstimator
     - TrendFilteringADMMEstimator
     - LogSplinesEstimator (no hyperparameters - runs single evaluation)
@@ -64,13 +60,10 @@ from methods import (
     CVXPYEstimator,
     FISTAEstimator, 
     ProximalNewtonEstimator,
-    ProximalNewtonLBFGSFullEstimator,
-    AutoDiffEstimator,
     KDEEstimator,
     TrendFilteringADMMEstimator,
     TrendFilteringCVXPYEstimator,
     TrendFilteringCVXPYPP,
-    TrendFilteringCVXPYPPA2Layered,
     # LogSplinesEstimator,
 )
 
@@ -94,13 +87,10 @@ ESTIMATORS = {
     "CVXPYEstimator": CVXPYEstimator,
     "FISTAEstimator": FISTAEstimator,
     "ProximalNewtonEstimator": ProximalNewtonEstimator,
-    "ProximalNewtonLBFGSFullEstimator": ProximalNewtonLBFGSFullEstimator,
-    "AutoDiffEstimator": AutoDiffEstimator,
     "KDEEstimator": KDEEstimator,
     "TrendFilteringADMMEstimator": TrendFilteringADMMEstimator,
     "TrendFilteringCVXPYEstimator": TrendFilteringCVXPYEstimator,
     "TrendFilteringCVXPYPP": TrendFilteringCVXPYPP,
-    "TrendFilteringCVXPYPPA2Layered": TrendFilteringCVXPYPPA2Layered,
     # "LogSplinesEstimator": LogSplinesEstimator,
 }
 
@@ -352,19 +342,6 @@ class OptunaHyperparameterTuner:
                 "n_grid_points": int(ng_val) if ng_is_fixed else self.n_grid_points,
                 "use_secondary_solver": bool(us_val) if us_is_fixed else True
             }
-        elif self.estimator_name == "TrendFilteringCVXPYPPA2Layered":
-            # Algorithm 2 layered constraints with data-adaptive knots
-            k_is_fixed, k_val = _fixed("k")
-            nc_is_fixed, nc_val = _fixed("norm_constraint")
-            ng_is_fixed, ng_val = _fixed("n_grid_points")
-            us_is_fixed, us_val = _fixed("use_secondary_solver")
-            params = {
-                "k": int(k_val) if k_is_fixed else trial.suggest_categorical("k", [0, 1, 2]),
-                "norm_constraint": float(nc_val) if nc_is_fixed else trial.suggest_float("norm_constraint", 1e-3, 1e6, log=True),
-                "n_grid_points": int(ng_val) if ng_is_fixed else self.n_grid_points,
-                "use_secondary_solver": bool(us_val) if us_is_fixed else True
-            }
-            
         elif self.estimator_name == "FISTAEstimator":
             ni_is_fixed, ni_val = _fixed("n_iterations")
             lam_is_fixed, lam_val = _fixed("lam")
@@ -399,50 +376,6 @@ class OptunaHyperparameterTuner:
                 "non_desc_clip_alpha": bool(clip_val) if clip_is_fixed else trial.suggest_categorical("non_desc_clip_alpha", [True, False]),
                 "hessian_regularization": float(hr_val) if hr_is_fixed else trial.suggest_float("hessian_regularization", 1e-10, 1e-6, log=True),
                 "non_descent_step_size": float(nd_val) if nd_is_fixed else trial.suggest_float("non_descent_step_size", 0.01, 0.5),
-            }
-            
-        elif self.estimator_name == "ProximalNewtonLBFGSFullEstimator":
-            ni_is_fixed, ni_val = _fixed("n_iterations")
-            lam_is_fixed, lam_val = _fixed("lam")
-            bo_is_fixed, bo_val = _fixed("basis_order")
-            c_is_fixed, c_val = _fixed("line_search_c")
-            mls_is_fixed, mls_val = _fixed("max_line_search_steps")
-            mem_is_fixed, mem_val = _fixed("lbfgs_memory")
-            clip_is_fixed, clip_val = _fixed("non_desc_clip_alpha")
-            gmin_is_fixed, gmin_val = _fixed("lbfgs_gamma_clip_min")
-            gmax_is_fixed, gmax_val = _fixed("lbfgs_gamma_clip_max")
-            params = {
-                "n_iterations": int(ni_val) if ni_is_fixed else self.max_iter,
-                "lam": float(lam_val) if lam_is_fixed else trial.suggest_float("lam", 1e-4, 1.0, log=True),
-                "basis_order": int(bo_val) if bo_is_fixed else trial.suggest_categorical("basis_order", [0, 1, 2]),
-                "line_search_c": float(c_val) if c_is_fixed else trial.suggest_float("line_search_c", 1e-5, 1e-1, log=True),
-                "max_line_search_steps": int(mls_val) if mls_is_fixed else trial.suggest_int("max_line_search_steps", 10, 50),
-                "lbfgs_memory": int(mem_val) if mem_is_fixed else trial.suggest_int("lbfgs_memory", 3, 15),
-                "non_desc_clip_alpha": bool(clip_val) if clip_is_fixed else trial.suggest_categorical("non_desc_clip_alpha", [True, False]),
-                "lbfgs_gamma_clip_range": ( # Note: lbfgs_gamma_clip_range is a tuple, so we suggest both bounds
-                    float(gmin_val) if gmin_is_fixed else trial.suggest_float("lbfgs_gamma_clip_min", 1e-5, 1e-1, log=True),
-                    float(gmax_val) if gmax_is_fixed else trial.suggest_float("lbfgs_gamma_clip_max", 1e1, 1e5, log=True)
-                ),
-            }
-            
-        elif self.estimator_name == "AutoDiffEstimator": # Default to AdamW optimizer, not Muon
-            ni_is_fixed, ni_val = _fixed("n_iterations")
-            lam_is_fixed, lam_val = _fixed("lam")
-            bo_is_fixed, bo_val = _fixed("basis_order")
-            lr_is_fixed, lr_val = _fixed("learning_rate")
-            wd_is_fixed, wd_val = _fixed("weight_decay")
-            sp_is_fixed, sp_val = _fixed("scheduler_patience")
-            sf_is_fixed, sf_val = _fixed("scheduler_factor")
-            dev_is_fixed, dev_val = _fixed("device")
-            params = {
-                "n_iterations": int(ni_val) if ni_is_fixed else self.max_iter,
-                "lam": float(lam_val) if lam_is_fixed else trial.suggest_float("lam", 1e-4, 1.0, log=True),
-                "basis_order": int(bo_val) if bo_is_fixed else trial.suggest_categorical("basis_order", [0, 1, 2]),
-                "learning_rate": float(lr_val) if lr_is_fixed else trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True),
-                "weight_decay": float(wd_val) if wd_is_fixed else trial.suggest_float("weight_decay", 0.0, 1e-1, log=True),
-                "scheduler_patience": int(sp_val) if sp_is_fixed else trial.suggest_int("scheduler_patience", 0, 1000),
-                "scheduler_factor": float(sf_val) if sf_is_fixed else trial.suggest_float("scheduler_factor", 0.1, 0.9, step=0.1),
-                "device": str(dev_val) if dev_is_fixed else "cpu"
             }
             
         elif self.estimator_name == "LogSplinesEstimator":

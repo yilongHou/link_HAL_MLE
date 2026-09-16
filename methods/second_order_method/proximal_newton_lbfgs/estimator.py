@@ -65,8 +65,8 @@ class ProximalNewtonLBFGSEstimator(BaseEstimator):
     - You have computational budget for two-loop recursion
     - Problem exhibits strong curvature that benefits from better Hessian approximation
     
-    Comparison with ProximalNewtonLBFGSFullEstimator:
-    ===============================================
+    Comparison with a full two-loop L-BFGS variant (explored during development, not used in the paper):
+    ====================================================================================================
     | Aspect                    | This (Reduced)        | Full L-BFGS          |
     |---------------------------|----------------------|----------------------|
     | Hessian approximation     | Diagonal H⁻¹≈(1/γ)I   | Two-loop recursion   |

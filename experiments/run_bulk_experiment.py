@@ -56,13 +56,10 @@ from methods import (
     CVXPYEstimator,
     FISTAEstimator,
     ProximalNewtonEstimator,
-    ProximalNewtonLBFGSFullEstimator,
-    AutoDiffEstimator,
     KDEEstimator,
     TrendFilteringADMMEstimator,
     TrendFilteringCVXPYEstimator,
     TrendFilteringCVXPYPP,
-    TrendFilteringCVXPYPPA2Layered,
     # LogSplinesEstimator,
 )
 
@@ -70,13 +67,10 @@ ESTIMATORS = {
     "CVXPYEstimator": CVXPYEstimator,
     "FISTAEstimator": FISTAEstimator,
     "ProximalNewtonEstimator": ProximalNewtonEstimator,
-    "ProximalNewtonLBFGSFullEstimator": ProximalNewtonLBFGSFullEstimator,
-    "AutoDiffEstimator": AutoDiffEstimator,
     "KDEEstimator": KDEEstimator,
     "TrendFilteringADMMEstimator": TrendFilteringADMMEstimator,
     "TrendFilteringCVXPYEstimator": TrendFilteringCVXPYEstimator,
     "TrendFilteringCVXPYPP": TrendFilteringCVXPYPP,
-    "TrendFilteringCVXPYPPA2Layered": TrendFilteringCVXPYPPA2Layered,
     # "LogSplinesEstimator": LogSplinesEstimator,
 }
 
@@ -109,8 +103,6 @@ def create_density_plot(
     true_sampler: Any,
     seed: int,
     save_path: str,
-    hal_grid: Optional[np.ndarray] = None,
-    hal_density: Optional[np.ndarray] = None,
 ) -> None:
     """
     Create and save density plot comparing estimated vs true density.
@@ -138,17 +130,6 @@ def create_density_plot(
             label='Estimated Density'
         )
 
-        # Plot HAL density if provided (for TFA2 comparisons)
-        if hal_grid is not None and hal_density is not None:
-            plt.plot(
-                hal_grid,
-                hal_density,
-                color='#ff7f0e',
-                linestyle='--',
-                linewidth=2,
-                label='HAL Density'
-            )
-        
         # Plot true density
         true_density = true_sampler.compute_density(np.array(grid_points))
         plt.plot(grid_points, true_density, 
@@ -180,33 +161,6 @@ def create_density_plot(
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
-
-
-def _load_hal_density_for_seed(
-    base_dir: str,
-    dgp_name: str,
-    n_samples: int,
-    n_seeds: int,
-    seed: int,
-    basis_order: int,
-) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-    """Load HAL density for a given seed if it exists."""
-    hal_experiment = f"{dgp_name}_CVXPYEstimator_basis{basis_order}_N{n_samples}_s{n_seeds}_optuna"
-    hal_path = os.path.join(base_dir, "results", hal_experiment, f"seed_{seed}.json")
-    if not os.path.isfile(hal_path):
-        return None, None
-    try:
-        with open(hal_path, "r") as f:
-            obj = json.load(f)
-        if not obj or "estimated_density" not in obj:
-            return None, None
-        grid = np.asarray(obj["estimated_density"]["gridpoints"], dtype=float)
-        dens = np.asarray(obj["estimated_density"]["density"], dtype=float)
-        if grid.size < 2 or grid.shape != dens.shape:
-            return None, None
-        return grid, dens
-    except Exception:
-        return None, None
 
 
 def regenerate_density_plot_for_seed(args_tuple: Tuple[Dict[str, Any], int, str, str, str]) -> bool:
@@ -251,24 +205,6 @@ def regenerate_density_plot_for_seed(args_tuple: Tuple[Dict[str, Any], int, str,
 
         estimator_results = obj.get("HAL_results") or {}
 
-        # Optional HAL overlay when plotting TFA2
-        hal_grid = None
-        hal_density = None
-        estimator_name = estimator_setup.get("estimator")
-        if estimator_name == "TrendFilteringCVXPYPPA2Layered":
-            basis_order = int(estimator_setup.get("comparison_hal_basis_order", 0))
-            n_seeds = len(setup.get("random_seeds", []))
-            # results_dir is <base_dir>/results/<experiment_name> so go up two levels.
-            base_dir = os.path.dirname(os.path.dirname(results_dir))
-            hal_grid, hal_density = _load_hal_density_for_seed(
-                base_dir=base_dir,
-                dgp_name=str(sampler_setup.get("dgp_name", sampler_name)),
-                n_samples=int(n_samples),
-                n_seeds=int(n_seeds),
-                seed=int(seed),
-                basis_order=basis_order,
-            )
-
         plot_file = os.path.join(plots_dir, f"seed_{seed}_density.png")
         create_density_plot(
             estimator_results=estimator_results,
@@ -276,8 +212,6 @@ def regenerate_density_plot_for_seed(args_tuple: Tuple[Dict[str, Any], int, str,
             true_sampler=sampler,
             seed=int(seed),
             save_path=plot_file,
-            hal_grid=hal_grid,
-            hal_density=hal_density,
         )
         return True
     except Exception:
@@ -368,29 +302,12 @@ def run_single_seed_experiment(args_tuple: Tuple[Dict[str, Any], int, str, str, 
         
         # Create and save density plot
         plot_file = os.path.join(plots_dir, f"seed_{seed}_density.png")
-        hal_grid = None
-        hal_density = None
-        if estimator_name == "TrendFilteringCVXPYPPA2Layered":
-            basis_order = int(estimator_setup.get("comparison_hal_basis_order", 0))
-            n_seeds = len(setup.get("random_seeds", []))
-            # results_dir is <base_dir>/results/<experiment_name> so go up two levels.
-            base_dir = os.path.dirname(os.path.dirname(results_dir))
-            hal_grid, hal_density = _load_hal_density_for_seed(
-                base_dir=base_dir,
-                dgp_name=str(sampler_setup.get("dgp_name", sampler_name)),
-                n_samples=int(n_samples),
-                n_seeds=int(n_seeds),
-                seed=int(seed),
-                basis_order=basis_order,
-            )
         create_density_plot(
             estimator_results,
             data,
             sampler,
             seed,
             plot_file,
-            hal_grid=hal_grid,
-            hal_density=hal_density,
         )
         
         return True

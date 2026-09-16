@@ -45,19 +45,11 @@ The six simulation DGPs are:
 
 ## What "minimum reproducible version" means here
 
-The paper's main simulation settings use:
+This repository is the minimum needed to regenerate the figures and tables in the paper; it is not a record of everything we tried.
 
-- `1000` Monte Carlo replicates for the HAL-MLE simulations
-- `50` Optuna trials for cross-validation
-- `5` CV folds
-
-The commands below keep the same experiment structure, DGPs, estimands, and post-processing scripts, but reduce compute cost to:
-
-- `NUM_SEEDS=20`
-- `N_TRIALS=10`
-- `CV_FOLDS=5`
-
-To move closer to the paper's final figures, do increase `NUM_SEEDS` to `1000` and `N_TRIALS` to `50` and run on a big cluster.
+- It contains only the code paths and saved outputs behind the reported results. Exploratory work that is not in the paper (for example, trend filtering with data-adaptive knot placement) was removed together with its results.
+- **Default path: regenerate from the saved outputs.** Every figure and table can be rebuilt from the checked-in per-seed outputs with the analysis scripts in sections 1-8 below. This needs no MOSEK license and no cluster.
+- **Re-running the experiments themselves** is documented too (`experiments/create_*` and `experiments/run_*`). The paper's settings are `1000` Monte Carlo replicates, `50` Optuna trials, and `5` CV folds, which took weeks of cluster time. The environment variables in the next section (`NUM_SEEDS=20`, `N_TRIALS=10`, `CV_FOLDS=5`) run the same pipeline at a small scale so you can check that it executes end to end; raise them to the paper's values on a cluster to regenerate the saved outputs. The saved fits were produced with MOSEK, so to match the paper's numbers you need a MOSEK license (free for academics); without one the estimator falls back to open-source solvers (see the Environment notes) and the numbers differ slightly.
 
 ## Environment
 
