@@ -14,7 +14,7 @@ This tree was imported as a **fresh snapshot** of the GitHub default-branch work
 ## Kept for figure regeneration
 
 - Source under `methods/`, `utils/`, `targeting/`, `cross_validation/`, `density_variance/`, and experiment scripts
-- `experiments/compare_knot_selection/` — result JSONs, setups, combinations, and knot-count CSVs for all six DGPs
+- `experiments/compare_knot_selection/` — result JSONs, setups, combinations, and knot-count CSVs for all six DGPs, plus the per-iteration optimizer logs (`single_<DGP>/logs/*.log`) that the four `visualize_*.py` scripts plot from (re-included via a `.gitignore` exception to the global `*.log` rule)
 - `experiments/uniform_convergence/results/` — CVXPY all N; TF / TFPP / KDE / LogSplines at N=800
 - `experiments/uniform_convergence/targeted_results/`
 - Summaries: `uniform_convergence_summary.csv`, `efficiency_analysis_results.json`

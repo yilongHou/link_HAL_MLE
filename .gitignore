@@ -44,3 +44,5 @@ paper/resources/
 # Logs
 *.log
 texput.log
+# ...except the per-iteration optimizer logs that the knot-selection figures are plotted from
+!experiments/compare_knot_selection/single_*/logs/*.log
