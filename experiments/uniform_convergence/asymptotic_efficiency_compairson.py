@@ -79,9 +79,16 @@ def load_targeting_results(base_dir):
     targeting_results = {}
     
     for param_key, file_param in param_file_mapping.items():
-        filepath = os.path.join(base_dir, f'efficiency_analysis_result_None_{file_param}.json')
+        # asymptotic_efficiency_results_with_targeting.py writes
+        # efficiency_analysis_result_<dgp_suffix>_<targeter>.json, where dgp_suffix is
+        # "all_dgps" when run without --dgp (older versions wrote "None" there).
+        candidates = [
+            os.path.join(base_dir, f'efficiency_analysis_result_{dgp_suffix}_{file_param}.json')
+            for dgp_suffix in ('all_dgps', 'None')
+        ]
+        filepath = next((p for p in candidates if os.path.exists(p)), None)
         
-        if os.path.exists(filepath):
+        if filepath is not None:
             with open(filepath, 'r') as f:
                 data = json.load(f)
                 
@@ -192,9 +199,14 @@ def save_comparison_plot(
     metric_display_names,
     save_dir,
     plot_filename,
-    figsize
+    figsize,
+    legend_bottom
 ):
-    """Save one comparison panel for a single DGP."""
+    """Save one comparison panel for a single DGP.
+
+    `legend_bottom` is the `subplots_adjust(bottom=...)` margin reserved for the
+    shared legend; it is fixed per panel so the saved figures stay byte-stable.
+    """
     n_rows = len(selected_metrics)
     fig, axes = plt.subplots(n_rows, len(parameters), figsize=figsize, squeeze=False)
     fig.suptitle(f'DGP: {DGP_NAME_MAPPING[dgp_name]}', fontsize=13, y=0.95)
@@ -290,7 +302,7 @@ def save_comparison_plot(
     # Adjust layout to make room for legend
     plt.tight_layout()
     plt.subplots_adjust(
-        bottom=0.12 if handles else 0.08,
+        bottom=legend_bottom if handles else 0.08,
         top=0.875,
         hspace=0.20,
         wspace=0.10
@@ -335,12 +347,14 @@ def create_comparison_plots(original_results, targeting_results, save_dir):
         {
             'selected_metrics': ['mse', 'variance', 'bias_over_se'],
             'plot_filename': 'efficiency_comparison.png',
-            'figsize': (10, 6)
+            'figsize': (10, 6),
+            'legend_bottom': 0.10  # 3x4 panel used in the paper
         },
         {
             'selected_metrics': ['mse', 'bias_over_se'],
             'plot_filename': 'efficiency_comparison_mse_bias_over_se.png',
-            'figsize': (10, 4.5)
+            'figsize': (10, 4.5),
+            'legend_bottom': 0.12  # compact 2x4 panel
         }
     ]
     
@@ -356,7 +370,8 @@ def create_comparison_plots(original_results, targeting_results, save_dir):
                 metric_display_names=metric_display_names,
                 save_dir=save_dir,
                 plot_filename=plot_spec['plot_filename'],
-                figsize=plot_spec['figsize']
+                figsize=plot_spec['figsize'],
+                legend_bottom=plot_spec['legend_bottom']
             )
 
     print(f"\nAll comparison plots saved to {os.path.abspath(save_dir)}")

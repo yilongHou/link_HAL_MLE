@@ -93,6 +93,7 @@ Look up an experiment by **name**. The second column is the figure/caption ident
 | EIC-based coverage for those four estimands | EIC standard-error coverage tables for mean, median, survival at 0.5, and second moment | uses targeted results from the efficiency experiment | `experiments/uniform_convergence/targeting_estimand_variance_result.py` |
 | n=800 method comparison (HAL-MLE, TF, TFPP, LogSplines, KDE) | Bias, variance, and MSE comparison across DGPs at `n=800` | `experiments/create_bulk_experiment.py`, `experiments/run_bulk_experiment.py` | `experiments/uniform_convergence/bias_variance_mse_analysis.py` |
 | Galaxy-velocity case study | Galaxy-velocity density and estimand figures | `test_case_study.ipynb` | `test_case_study.ipynb` |
+| Simulation DGP illustration | The six simulation densities plotted in a 2x3 grid (appendix DGP-setup figure) | none (closed-form densities) | `test_dgp.ipynb` |
 
 ## 1. Optimization / knot-selection (Truncated Normal, 2nd-order basis)
 
@@ -195,6 +196,8 @@ The paper compares the plug-in HAL-MLE and HAL-TMLE against the asymptotically e
 
 Run the plug-in analysis first, then generate targeted results, then combine them into the paper figure panels.
 
+The outputs of the first two commands are already checked in (`experiments/uniform_convergence/efficiency_analysis_results.json` and the per-seed HAL-TMLE fits in `experiments/uniform_convergence/targeted_results/`), so to regenerate the paper panels from the committed data you can skip them and start at the `mkdir` line. The targeting step is the expensive part: it re-runs the TMLE update for every seed, sample size, DGP, and estimand.
+
 ```bash
 uv run python experiments/uniform_convergence/asymptotic_efficiency_results.py
 
@@ -220,7 +223,7 @@ uv run python experiments/uniform_convergence/asymptotic_efficiency_compairson.p
 Outputs:
 
 - Plug-in efficiency summaries in `experiments/uniform_convergence/efficiency_analysis_results.json`
-- Targeted per-estimand summaries in `experiments/uniform_convergence/targeted_plots/`
+- Targeted per-estimand summaries in `experiments/uniform_convergence/targeted_plots/efficiency_analysis_result_all_dgps_<estimand>.json` (plus per-DGP diagnostic plots)
 - Final comparison panels in `paper/resources/density_asymptotic_efficiency/<DGP>/`: the full 3x4 panel `efficiency_comparison.png` (MSE, variance, |bias|/SE) and the compact 2x4 panel `efficiency_comparison_mse_bias_over_se.png` (MSE and |bias|/SE only)
 
 The main-text efficiency panel is `TruncatedGMMAsymmetricThree`. The same script also writes the full six-DGP panels.
@@ -319,3 +322,13 @@ If you prefer to inspect the notebook interactively, open it with:
 ```bash
 uv run jupyter lab test_case_study.ipynb
 ```
+
+## 8. Simulation DGP illustration
+
+The appendix figure showing the six simulation densities is produced by `test_dgp.ipynb`, which instantiates the DGPs from `utils/` with the parameters used in the paper and plots them in a 2x3 grid. It needs no experiment results:
+
+```bash
+uv run jupyter nbconvert --to notebook --execute test_dgp.ipynb --inplace
+```
+
+Output: `paper/resources/simulation_dgp.png`.
